@@ -2,14 +2,13 @@ const Watchain = artifacts.require('./contracts/Watchain.sol');
 
 contract('Test Watchain', ([account, seller, buyer]) => {
     let watchain;
-
     console.log("Account: " + account);
     console.log("Seller: " + seller);
     console.log("Buyer: " + buyer);
 
     // Deploy a new instance of the contract before running the tests
     before(async () => {
-        watchain = await Watchain.deployed(); // Deploy the contract
+        watchain = await Watchain.deployed(); 
     });
 
     describe('deployment', async () => {
@@ -18,7 +17,7 @@ contract('Test Watchain', ([account, seller, buyer]) => {
             const address = watchain.address;
             console.log("Contract Address: " + address);
 
-            // Ensure the address is valid
+            // Test for address
             assert.notEqual(address, 0x0, "Address should not be 0x0");
             assert.notEqual(address, '', "Address should not be an empty string");
             assert.notEqual(address, null, "Address should not be null");
@@ -37,43 +36,12 @@ contract('Test Watchain', ([account, seller, buyer]) => {
         let result, watchCount;
     
         before(async () => {
-            // Register the watch with all 10 parameters
-            result = await watchain.registerWatch(
-                "SN12345",                // serialNumber (string)
-                "Explorer",               // model (string)
-                "Classic Collection",     // collection (string)
-                "2021-05-10",             // dateOfManufacture (string)
-                "Authorized Dealer",      // authorizedDealer (string)
-                "ID001",                  // initialOwnerId (string)
-                "John Doe",               // initialOwnerName (string)
-                "1234567890",             // initialOwnerContact (string)
-                "john@example.com",       // initialOwnerEmail (string)
-                "2022-01-01"              // purchaseDate (string)
-            );
+            // Register the watch 
+            result = await watchain.registerWatch();
     
             // Verify the total number of watches after registration
             watchCount = await watchain.getNoOfWatches();
             console.log("Watch Count: " + watchCount.toString());
-        });
-    
-        it('verifying watch ID', async () => {
-            const event = result.logs[0].args;
-            assert.equal(event.watchId.toNumber(), 1, "Watch ID is correct");
-        });
-    
-        it('verifying watch serial number', async () => {
-            const event = result.logs[0].args;
-            assert.equal(event.serialNumber, "SN12345", "Watch serial number is correct");
-        });
-    
-        it('verifying watch model', async () => {
-            const event = result.logs[0].args;
-            assert.equal(event.model, "Explorer", "Watch model is correct");
-        });
-    
-        it('verifying watch collection', async () => {
-            const event = result.logs[0].args;
-            assert.equal(event.collection, "Classic Collection", "Watch collection is correct");
         });
     
         it('verifying total watch count', async () => {
@@ -81,117 +49,83 @@ contract('Test Watchain', ([account, seller, buyer]) => {
         });
     });
     
+    describe('Adding Watch Information', async () => {
+        let result;
+        before(async () => {
+            result = await watchain.addWatchInfo(
+                1,
+                "SN12345", // Serial Number
+                "Explorer", // Model
+                "Classic Collection", // Collection
+                "2021-05-10", // Date of Manufacture
+                "Authorized Dealer", // Authorized Dealer
+                5000 // Price
+            );
+        });
+    
+        it('verifying watch serial number', async () => {
+            const watchInfo = await watchain.getWatchInfo(1);
+            assert.equal(watchInfo.serialNumber, "SN12345", "Watch serial number is correct");
+        });
+    
+        it('verifying watch model', async () => {
+            const watchInfo = await watchain.getWatchInfo(1);
+            assert.equal(watchInfo.model, "Explorer", "Watch model is correct");
+        });
+    
+        it('verifying watch collection', async () => {
+            const watchInfo = await watchain.getWatchInfo(1);
+            assert.equal(watchInfo.collection, "Classic Collection", "Watch collection is correct");
+        });
+    });
+
     describe('Adding Ownership', async () => {
         let result;
-        let watchCount;
     
         before(async () => {
-            // Register a watch before adding ownership
-            await watchain.registerWatch(
-                "SN12345",                // serialNumber
-                "Explorer",               // model
-                "Classic Collection",     // collection
-                "2021-05-10",             // dateOfManufacture
-                "Authorized Dealer",      // authorizedDealer
-                "ID001",                  // initialOwnerId
-                "John Doe",               // initialOwnerName
-                "1234567890",             // initialOwnerContact
-                "john@example.com",       // initialOwnerEmail
-                "2022-01-01"              // purchaseDate
-            );
-    
-            // Add ownership record (new owner)
+            // Add ownership record for new owner
             result = await watchain.addOwnershipRecord(
-                1,                            // watchId
-                "OWN002",                      // newOwnerId
-                "Alice Johnson",              // newOwnerName
-                "2021-05-20",                 // transferDate
-                "555-1234",                   // newOwnerContact
-                "alice.johnson@example.com",  // newOwnerEmail
-                { from: seller }              // Transaction sender (seller address)
+                1,                            // Watch ID
+                "Alice Johnson",              // Owner Name
+                "2021-05-20",                // Transfer Date
+                "555-1234",                  // Contact Number
+                "alice.johnson@example.com", // Email
+                { from: seller }              // Seller
             );
-    
-            watchCount = await watchain.getNoOfWatches();
-            console.log("Number of watches: " + watchCount);
         });
-    
-        it('verifying new owner ID', async () => {
+
+        it('verifying ownership record', async () => {
             const event = result.logs[0].args;
-            console.log("Watch ID: " + event.watchId);
-            assert.equal(event.newOwnerId, "ID002", "New owner ID is correct");
-        });
-    
-        it('verifying new owner name', async () => {
-            const event = result.logs[0].args;
-            console.log("Watch ID: " + event.watchId);
-            assert.equal(event.newOwnerName, "Alice Johnson", "New owner name is correct");
-        });
-    
-        it('verifying transfer date', async () => {
-            const event = result.logs[0].args;
-            console.log("Watch ID: " + event.watchId);
+            assert.equal(event.ownerId, seller, "Owner ID is correct");
+            assert.equal(event.ownerName, "Alice Johnson", "Owner name is correct");
             assert.equal(event.transferDate, "2021-05-20", "Transfer date is correct");
         });
-    
-        it('verifying new owner contact', async () => {
-            // Verify the contact number in the new ownership record
-            const watch = await watchain.getCurrentOwner(1);
-            assert.equal(watch.contactNumber, "555-1234", "New owner contact is correct");
-        });
-    
-        it('verifying new owner email', async () => {
-            // Verify the email in the new ownership record
-            const watch = await watchain.getCurrentOwner(1);
-            assert.equal(watch.email, "alice.johnson@example.com", "New owner email is correct");
+
+        it('verifying new owner contact details', async () => {
+            const ownershipRecords = await watchain.getOwnershipRecords(1);
+            const latestOwnership = ownershipRecords[ownershipRecords.length - 1];
+            assert.equal(latestOwnership.contactNumber, "555-1234", "Owner contact is correct");
+            assert.equal(latestOwnership.email, "alice.johnson@example.com", "Owner email is correct");
         });
     });
 
     describe('Adding Service Record', async () => {
         let result;
-        let watchCount;
     
         before(async () => {
-            // Register a watch before adding a service record
-            await watchain.registerWatch(
-                "SN12345",                // serialNumber
-                "Explorer",               // model
-                "Classic Collection",     // collection
-                "2021-05-10",             // dateOfManufacture
-                "Authorized Dealer",      // authorizedDealer
-                "ID001",                  // initialOwnerId
-                "John Doe",               // initialOwnerName
-                "1234567890",             // initialOwnerContact
-                "john@example.com",       // initialOwnerEmail
-                "2022-01-01"              // purchaseDate
-            );
-    
             // Add a service record for the watch
             result = await watchain.addServiceRecord(
-                1,                           // watchId
-                "2022-06-15",                 // serviceDate
-                "Battery replacement",       // serviceDetails
-                "Battery"                    // replacementParts
+                1,                            // Watch ID
+                "2022-06-15",                 // Service Date
+                "Battery replacement",        // Service Details
+                "Battery"                     // Replacement Parts
             );
-    
-            watchCount = await watchain.getNoOfWatches();
-            console.log("Number of watches: " + watchCount);
         });
-    
-        it('verifying service date', async () => {
+
+        it('verifying service record details', async () => {
             const event = result.logs[0].args;
-            console.log("Watch ID: " + event.watchId);
             assert.equal(event.serviceDate, "2022-06-15", "Service date is correct");
-        });
-    
-        it('verifying service details', async () => {
-            const event = result.logs[0].args;
-            console.log("Watch ID: " + event.watchId);
             assert.equal(event.details, "Battery replacement", "Service details are correct");
-        });
-    
-        it('verifying replacement parts', async () => {
-            const event = result.logs[0].args;
-            console.log("Watch ID: " + event.watchId);
             assert.equal(event.replacementParts, "Battery", "Replacement parts are correct");
         });
     
@@ -202,6 +136,21 @@ contract('Test Watchain', ([account, seller, buyer]) => {
             assert.equal(latestServiceRecord.details, "Battery replacement", "Service details match the latest record");
             assert.equal(latestServiceRecord.replacementParts, "Battery", "Replacement parts match the latest record");
         });
-    });    
-});    
-    
+    });
+
+    describe('Purchasing a Watch', async () => {
+        let result;
+
+        before(async () => {
+            // Purchase the watch
+            result = await watchain.purchaseWatch(1, { from: buyer, value: web3.utils.toWei('5', 'ether') });
+        });
+
+        it('verifying watch purchase', async () => {
+            const event = result.logs[0].args;
+            assert.equal(event.watchId.toNumber(), 1, "Watch ID is correct");
+            assert.equal(event.owner, buyer, "Buyer address is correct");
+            assert.equal(event.status.toString(), "1", "Watch status is correct (Sold)");
+        });
+    });
+});

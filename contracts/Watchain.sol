@@ -2,6 +2,8 @@
 pragma solidity ^0.8.19;
 
 contract Watchain {
+    enum WatchStatus {Available, Sold}
+    
     string public companyName;
     uint watchCount;
 
@@ -10,176 +12,139 @@ contract Watchain {
         companyName = "Watchain";
     }
 
-    // Struct for watch details and watch history
-    struct Watch {
+    struct WatchInformation {
         string serialNumber;
         string model;
         string collection;
         string dateOfManufacture;
         string authorizedDealer;
-        OwnershipRecord currentOwner; // Current owner's details
+        uint price;
+        WatchStatus status;
+    }
+
+    struct OwnershipRecord {
+        address payable ownerId;
+        string ownerName;
+        string transferDate;
+        string contactNumber;
+        string email;
+    }
+
+    struct ServiceHistory {
+        string serviceDate;
+        string details;
+        string replacementParts;
+    }
+
+    struct Watch {
+        WatchInformation watchInfo;
         OwnershipRecord[] ownershipRecords;
         ServiceHistory[] serviceHistory;
     }
 
-    // Struct for ownership and transfer records
-   struct OwnershipInfo {
-    string ownerId;
-    string ownerName;
-    string contact;
-    string email;
-    uint256 transferDate;
-}
+    mapping(uint256 => Watch) public watches;
 
-
-    // Struct for service and maintenance history
-    struct ServiceHistory {
-        string serviceDate;
-        string details;
-        string replacementParts; // Set to "null" if no parts were replaced
-    }
-
-    mapping(uint256 => Watch) public watches;mapping(uint256 => OwnershipInfo[]) public ownershipHistory;
-
-     event WatchRegistered(
+    event WatchRegistered(
         uint256 watchId, 
         string serialNumber, 
         string model, 
         string collection
-        );
+    );
 
-    // Register a new watch
-    function registerWatch(
+    event OwnershipRecorded(
+        uint256 watchId,
+        address payable ownerId,
+        string ownerName,
+        string transferDate
+    );
+
+    event ServiceRecordAdded(
+        uint256 watchId, 
+        string serviceDate, 
+        string details,
+        string replacementParts
+    );
+
+    event WatchPurchased(
+        uint256 watchId,
+        string serialNumber,
+        uint price,
+        address payable owner,
+        WatchStatus status
+    );
+
+    function getCompanyName() public view returns (string memory) {
+        return companyName;
+    }
+
+    function getNoOfWatches() public view returns (uint) {
+        return watchCount;
+    }
+
+    function registerWatch() public returns (uint256) {
+        watchCount++;
+        return watchCount;
+    }
+
+    function addWatchInfo(
+        uint256 watchId,
         string memory _serialNumber,
         string memory _model,
         string memory _collection,
         string memory _dateOfManufacture,
         string memory _authorizedDealer,
-        string memory _initialOwnerId,
-        string memory _initialOwnerName,
-        string memory _initialOwnerContact,
-        string memory _initialOwnerEmail,
-        string memory _purchaseDate
-    ) public returns (uint256) {
-        watchCount++;
-
-        // Create a new watch and initialize its arrays
-        Watch storage newWatch = watches[watchCount];
-        newWatch.serialNumber = _serialNumber;
-        newWatch.model = _model;
-        newWatch.collection = _collection;
-        newWatch.dateOfManufacture = _dateOfManufacture;
-        newWatch.authorizedDealer = _authorizedDealer;
-
-        // Set the initial owner as the current owner
-        OwnershipRecord memory initialOwner = OwnershipRecord(
-            _initialOwnerId,
-            _initialOwnerName,
-            _purchaseDate,
-            _initialOwnerContact,
-            _initialOwnerEmail
-        );
-        newWatch.currentOwner = initialOwner;
-
-        // Add the initial owner to ownership records
-        newWatch.ownershipRecords.push(initialOwner);
-        emit WatchRegistered(watchCount, _serialNumber, _model, _collection);
-        
-        return watchCount;
+        uint _price
+    ) public {
+        watches[watchId].watchInfo = WatchInformation(_serialNumber, _model, _collection, _dateOfManufacture, _authorizedDealer, _price, WatchStatus.Available);
+        emit WatchRegistered(watchId, _serialNumber, _model, _collection);
     }
 
-    event OwnershipRecorded(
-        uint256 watchId, 
-        string newOwnerId, 
-        string newOwnerName, 
-        string transferDate
-    );
-
-    // Add ownership transfer record --> appending and updating current owner
     function addOwnershipRecord(
         uint256 watchId,
-        string memory _newOwnerId,
-        string memory _newOwnerName, 
+        string memory _ownerName,
         string memory _transferDate,
-        string memory _newOwnerContact,
-        string memory _newOwnerEmail
+        string memory _contactNumber,
+        string memory _email
     ) public {
-
-        // Create a new ownership record
-        OwnershipRecord memory newOwner = OwnershipRecord(
-            _newOwnerId,
-            _newOwnerName,
-            _transferDate,
-            _newOwnerContact,
-            _newOwnerEmail
-        );
-
-        // Update the current owner 
-        watches[watchId].currentOwner = newOwner;
-
-        // Add the new ownership record to the watch's ownershipRecords array
-        watches[watchId].ownershipRecords.push(newOwner);
-        emit OwnershipRecorded(watchId, _newOwnerId, _newOwnerName, _transferDate);
+        watches[watchId].ownershipRecords.push(OwnershipRecord(payable(msg.sender), _ownerName, _transferDate, _contactNumber, _email));
+        emit OwnershipRecorded(watchId, payable(msg.sender), _ownerName, _transferDate);
     }
 
-    event ServiceRecordAdded(
-        uint256 watchId, 
-        string serviceDate, 
-        string details
-    );
-
-    // Add service history record
     function addServiceRecord(
         uint256 watchId,
         string memory _serviceDate,
         string memory _details,
         string memory _replacementParts
     ) public {
-        watches[watchId].serviceHistory.push(
-            ServiceHistory(
-                _serviceDate,
-                _details,
-                _replacementParts
-            )
-        );
-    emit ServiceRecordAdded(watchId, _serviceDate, _details);
+        watches[watchId].serviceHistory.push(ServiceHistory(_serviceDate, _details, _replacementParts));
+        emit ServiceRecordAdded(watchId, _serviceDate, _details, _replacementParts);
     }
 
-    // Retrieve watch information
-    function getWatchInfo(uint256 watchId) public view returns (
-        string memory serialNumber,
-        string memory model,
-        string memory collection,
-        string memory dateOfManufacture,
-        string memory authorizedDealer
-    ) {
-        Watch storage watch = watches[watchId];
-        return (
-            watch.serialNumber,
-            watch.model,
-            watch.collection,
-            watch.dateOfManufacture,
-            watch.authorizedDealer
-        );
+    function getWatchInfo(uint256 watchId) public view returns (WatchInformation memory) {
+        return watches[watchId].watchInfo;
     }
 
-    // Retrieve current owner
-    function getCurrentOwner(uint256 watchId) public view returns (OwnershipRecord memory) {
-        return watches[watchId].currentOwner;
-    }
-
-    // Retrieve ownership records
     function getOwnershipRecords(uint256 watchId) public view returns (OwnershipRecord[] memory) {
         return watches[watchId].ownershipRecords;
     }
 
-    // Retrieve service history
     function getServiceHistory(uint256 watchId) public view returns (ServiceHistory[] memory) {
         return watches[watchId].serviceHistory;
     }
 
-    // Retrieve total number of watches
-    function getNoOfWatches() public view returns (uint) {
-        return watchCount;
+    function purchaseWatch(uint256 watchId) public payable {
+        Watch storage watch = watches[watchId];
+        require(watchId > 0 && bytes(watch.watchInfo.serialNumber).length != 0, "Watch ID cannot be empty");
+        require(msg.value >= watch.watchInfo.price, "Insufficient funds");
+        require(watch.watchInfo.status == WatchStatus.Available, "Watch is not available");
+        
+        uint256 currentOwnerId = watch.ownershipRecords.length;
+        address payable seller = watch.ownershipRecords[currentOwnerId - 1].ownerId;
+        require(seller != msg.sender, "Seller cannot be the buyer");
+
+        watch.watchInfo.status = WatchStatus.Sold;
+        payable(seller).transfer(msg.value);
+
+        emit WatchPurchased(watchId, watch.watchInfo.serialNumber, watch.watchInfo.price, payable(msg.sender), WatchStatus.Sold);
     }
 }

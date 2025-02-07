@@ -140,35 +140,44 @@
         <h1>Register Your Rolex</h1>
         <p>Enter your timepiece details for authentication and verification</p>
     </div>
-    <div class="container">
-        <div class="form-card">
-            <h2 class="mb-4">Add New Owner</h2>
-            <form action="/addOwner/<%= watchId %>" method="POST">
-                <div class="mb-3">
-                    <label for="ownerId" class="form-label">Owner ID</label>
-                    <input type="text" class="form-control" id="ownerId" name="ownerId" required>
-                </div>
-                <div class="mb-3">
-                    <label for="ownerName" class="form-label">Owner Name</label>
-                    <input type="text" class="form-control" id="ownerName" name="ownerName" required>
-                </div>
-                <div class="mb-3">
-                    <label for="contact" class="form-label">Contact Number</label>
-                    <input type="tel" class="form-control" id="contact" name="contact" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="transferDate" class="form-label">Transfer Date</label>
-                    <input type="date" class="form-control" id="transferDate" name="transferDate" required>
-                </div>
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-custom">Add Owner</button>
-                </div>
-            </form>
-        </div>
-    </div>    
+
+    <div class="registration-form">
+        <form action="/" method="POST" enctype="multipart/form-data">
+            <label for="serialNumber">Serial Number:</label>
+            <input type="text" id="serialNumber" name="serialNumber" required>
+
+            <label for="model">Model:</label>
+            <input type="text" id="model" name="model" required>
+
+            <label for="collection">Collection:</label>
+            <input type="text" id="collection" name="collection" required>
+
+            <label for="dateOfManufacture">Date of Manufacture:</label>
+            <input type="date" id="dateOfManufacture" name="dateOfManufacture" required>
+
+            <label for="authorizedDealer">Authorized Dealer:</label>
+            <input type="text" id="authorizedDealer" name="authorizedDealer" required>
+
+            <label for="initialOwnerId">Initial Owner ID:</label>
+            <input type="text" id="initialOwnerId" name="initialOwnerId" required>
+
+            <label for="initialOwnerName">Initial Owner Name:</label>
+            <input type="text" id="initialOwnerName" name="initialOwnerName" required>
+
+            <label for="initialOwnerContact">Initial Owner Contact Number:</label>
+            <input type="text" id="initialOwnerContact" name="initialOwnerContact" required>
+
+            <label for="initialOwnerEmail">Initial Owner Email:</label>
+            <input type="email" id="initialOwnerEmail" name="initialOwnerEmail" required>
+
+            <label for="purchaseDate">Purchase Date:</label>
+            <input type="date" id="purchaseDate" name="purchaseDate" required>
+
+            <label for="watchImage">Watch Image:</label>
+            <input type="file" id="watchImage" name="watchImage" accept="image/*" required>
+
+            <button type="submit">Register Watch</button>
+        </form>
+    </div>
 </body>
 </html>

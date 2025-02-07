@@ -258,17 +258,15 @@
                                         <tr>
                                             <th>Service Date</th>
                                             <th>Service Details</th>
-                                            <th>Technician</th>
-                                            <th>Service Center</th>
+                                            <th>Replacement </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <% if (watch.serviceHistory) { %>
                                             <tr>
-                                                <td><%= watch.serviceHistory.serviceDate %></td>
+                                                <td><%= new Date(watch.serviceHistory.serviceDate).toLocaleDateString() %></td>
                                                 <td><%= watch.serviceHistory.serviceDetails %></td>
-                                                <td><%= watch.serviceHistory.technician %></td>
-                                                <td><%= watch.serviceHistory.serviceCenter %></td>
+                                                <td><%= watch.serviceHistory.replacementParts %></td>
                                             </tr>
                                         <% } else { %>
                                             <tr>

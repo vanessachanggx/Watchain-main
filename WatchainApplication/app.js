@@ -135,6 +135,7 @@ function formatServiceHistoryInfo(serviceHistoryInfo) {
   return {
     serviceDate: serviceHistoryInfo[0],  
     serviceDetails: serviceHistoryInfo[1],
+    replacementParts: serviceHistoryInfo[2],
   };
 }
 
@@ -142,11 +143,6 @@ function formatServiceHistoryInfo(serviceHistoryInfo) {
 app.get('/loading-status', (req, res) => {
     res.json({ loading: loading });
 });
-
-//In your Express app, add this new endpoint:
-app.get('/loading-status', (req, res) => {
-    res.json({ loading: loading });
-  });
 
   app.get('/', async (req, res) => {
     console.log("home page");
@@ -310,6 +306,58 @@ app.post('/addOwner/:watchId', async (req, res) => {
         res.status(500).send('Error adding owner');
     }
 });
+
+// Add these routes after your existing routes in app.js
+
+// GET route to display the add service form
+app.get('/addService/:watchId', async (req, res) => {
+    try {
+        const watchId = req.params.watchId;
+        res.render('addService', {
+            acct: account,
+            watchId: watchId
+        });
+    } catch (error) {
+        console.error('Error loading add service page:', error);
+        res.status(500).send('Error loading add service page');
+    }
+});
+
+// POST route to handle the service addition
+app.post('/addService/:watchId', async (req, res) => {
+    try {
+        const watchId = req.params.watchId;
+        const { serviceDate, serviceDetails, replacementParts } = req.body;
+
+        // Convert the service date to ISO string
+        const formattedServiceDate = new Date(serviceDate).toISOString();
+
+        // Estimate gas for the transaction
+        const estimatedGas = await contractInfo.methods.addServiceRecord(
+            watchId,
+            formattedServiceDate,
+            serviceDetails,
+            replacementParts
+        ).estimateGas({ from: account });
+
+        // Execute the transaction
+        await contractInfo.methods.addServiceRecord(
+            watchId,
+            formattedServiceDate,
+            serviceDetails,
+            replacementParts
+        ).send({
+            from: account,
+            gas: BigInt(estimatedGas) + BigInt(50000)
+        });
+
+        res.redirect(`/watch/${watchId}`);
+    } catch (error) {
+        console.error('Error adding service record:', error);
+        res.status(500).send('Error adding service record');
+    }
+});
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;
