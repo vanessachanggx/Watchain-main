@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Add Service Record</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.1/web3.min.js"></script>
     <style>
         body {
             font-family: 'Public Sans';
@@ -15,6 +17,10 @@
         .navbar {
             background-color: #766B62;
             padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
         }
 
         .account-info {
@@ -49,8 +55,39 @@
             background-color: #8E837B;
             color: white;
         }
+
+        .connect-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .connect-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-sm">
         <div class="container-fluid">
@@ -67,7 +104,8 @@
                     </li>
                 </ul>
             </div>
-            <span class="account-info">Account: <%= acct %></span>
+            <button id="connectButton" class="connect-button">Connect to MetaMask</button>
+            <span class="account-info" id="accountDisplay">Account: <%= acct %></span>
         </div>
     </nav>
 
@@ -98,4 +136,5 @@
         </div>
     </div>
 </body>
+
 </html>

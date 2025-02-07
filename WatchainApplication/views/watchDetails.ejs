@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Watch Details - Watchain</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,18 +9,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.1/web3.min.js"></script>
+
     <style>
         body {
             font-family: 'Public Sans';
             background-color: #e6e2df;
             color: #333;
         }
-    
+
         .navbar {
             background-color: #766B62;
             padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .navbar {
             background-color: #766B62;
             padding: 1rem 2rem;
@@ -42,70 +46,70 @@
             font-size: 1rem;
             font-weight: normal;
         }
-    
+
         .watch-card {
             background: white;
             border-radius: 12px;
             padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s ease;
         }
-    
+
         .watch-card:hover {
             transform: translateY(-5px);
         }
-    
+
         .watch-image-container {
             background: white;
             padding: 2rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
         }
-    
+
         .watch-image {
             width: 100%;
             max-width: 400px;
             height: auto;
             border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
-    
+
         .watch-image:hover {
             transform: scale(1.02);
         }
-    
+
         .details-card {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
             overflow: hidden;
         }
-    
+
         .details-card-header {
             background: #766B62;
             padding: 1.5rem;
             color: white;
             border-bottom: none;
         }
-    
+
         .table {
             margin-bottom: 0;
         }
-    
+
         .table thead th {
             background-color: #f8f8f8;
             border-bottom: 2px solid #dee2e6;
             padding: 1rem;
             font-weight: 600;
         }
-    
+
         .table tbody td {
             padding: 1rem;
             vertical-align: middle;
         }
-    
+
         .btn-custom {
             background-color: #766B62;
             color: white;
@@ -114,35 +118,35 @@
             transition: all 0.3s ease;
             font-weight: 500;
         }
-    
+
         .btn-custom:hover {
             background-color: #8E837B;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-    
+
         .sticky-sidebar {
             position: sticky;
             top: 20px;
             padding: 1rem;
         }
-    
+
         h2 {
             color: #766B62;
             margin: 1.5rem 0;
             font-weight: 600;
         }
-    
+
         .text-start {
             color: #555;
             line-height: 1.6;
         }
-    
+
         .text-start strong {
             color: #333;
             font-weight: 600;
         }
-    
+
         .account-info {
             background-color: rgba(255, 255, 255, 0.15);
             padding: 0.75rem 1.5rem;
@@ -150,18 +154,49 @@
             font-weight: 500;
             letter-spacing: 0.5px;
         }
-    
+
         .container {
             padding: 2rem 1rem;
         }
-    
+
         .alert {
             border-radius: 8px;
             padding: 1rem 1.5rem;
             font-weight: 500;
         }
-    </style>    
+
+        .connect-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .connect-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-sm">
         <div class="container-fluid">
@@ -178,7 +213,8 @@
                     </li>
                 </ul>
             </div>
-            <span class="account-info">Account: <%= acct %></span>
+            <button id="connectButton" class="connect-button">Connect to MetaMask</button>
+            <span class="account-info" id="accountDisplay">Account: <%= acct %></span>
         </div>
     </nav>
 
@@ -190,98 +226,97 @@
                     <div class="sticky-sidebar">
                         <div class="watch-card">
                             <div class="watch-image-container">
-                                <img src="/images/<%= watch.watchInfo.model %>.jpg" 
-                                     alt="<%= watch.watchInfo.model %>" 
-                                     class="watch-image"
-                                     onerror="console.error('Image failed to load:', this.src);"/>
+                                <img src="/images/<%= watch.watchInfo.model %>.jpg" alt="<%= watch.watchInfo.model %>"
+                                    class="watch-image" onerror="console.error('Image failed to load:', this.src);" />
                             </div>
-                                <h2><%= watch.watchInfo.model %></h2>
-                                <div class="text-start mt-3">
-                                    <p><strong>Collection:</strong> <%= watch.watchInfo.collection %></p>
-                                    <p><strong>Serial Number:</strong> <%= watch.watchInfo.serialNumber %></p>
-                                    <p><strong>Date of Manufacture:</strong> <%= watch.watchInfo.dateOfManufacture %></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right column - Records -->
-                    <div class="col-md-8">
-                        <!-- Ownership Records Section -->
-                            <div class="details-card mb-4">
-                                <div class="details-card-header d-flex justify-content-between align-items-center">
-                                    <h3 class="m-0">Ownership Records</h3>
-                                    <a href="/addOwner/<%= watch.id %>" class="btn btn-custom">Add Owner</a>
-                                </div>
-                                <div class="p-3">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Owner ID</th>
-                                                <th>Owner Name</th>
-                                                <th>Transfer Date</th>
-                                                <th>Contact</th>
-                                                <th>Email</th>
-                                                <th>Account</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% if (watch.ownership) { %>
-                                                <tr>
-                                                    <td><%= watch.ownership.ownerId %></td>
-                                                    <td><%= watch.ownership.ownerName %></td>
-                                                    <td><%= new Date(watch.ownership.transferDate).toLocaleDateString() %></td>
-                                                    <td><%= watch.ownership.contact %></td>
-                                                    <td><%= watch.ownership.email %></td>
-                                                    <td><%= acct %></td>
-                                                </tr>
-                                            <% } else { %>
-                                                <tr>
-                                                    <td colspan="6">No ownership records available</td>
-                                                </tr>
-                                            <% } %>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-
-                        <!-- Service History -->
-                        <div class="details-card mb-4">
-                            <div class="details-card-header d-flex justify-content-between align-items-center">
-                                <h3 class="m-0">Service History</h3>
-                                <a href="/addService/<%= watch.id %>" class="btn btn-custom">Add Service Record</a>
-                            </div>
-                            <div class="p-3">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Service Date</th>
-                                            <th>Service Details</th>
-                                            <th>Replacement </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% if (watch.serviceHistory) { %>
-                                            <tr>
-                                                <td><%= new Date(watch.serviceHistory.serviceDate).toLocaleDateString() %></td>
-                                                <td><%= watch.serviceHistory.serviceDetails %></td>
-                                                <td><%= watch.serviceHistory.replacementParts %></td>
-                                            </tr>
-                                        <% } else { %>
-                                            <tr>
-                                                <td colspan="4">No service history available</td>
-                                            </tr>
-                                        <% } %>
-                                    </tbody>
-                                </table>
+                            <h2><%= watch.watchInfo.model %></h2>
+                            <div class="text-start mt-3">
+                                <p><strong>Collection:</strong> <%= watch.watchInfo.collection %></p>
+                                <p><strong>Serial Number:</strong> <%= watch.watchInfo.serialNumber %></p>
+                                <p><strong>Date of Manufacture:</strong> <%= watch.watchInfo.dateOfManufacture %></p>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Right column - Records -->
+                <div class="col-md-8">
+                    <!-- Ownership Records Section -->
+                    <div class="details-card mb-4">
+                        <div class="details-card-header d-flex justify-content-between align-items-center">
+                            <h3 class="m-0">Ownership Records</h3>
+                            <a href="/addOwner/<%= watch.id %>" class="btn btn-custom">Add Owner</a>
+                        </div>
+                        <div class="p-3">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Owner ID</th>
+                                        <th>Owner Name</th>
+                                        <th>Transfer Date</th>
+                                        <th>Contact</th>
+                                        <th>Email</th>
+                                        <th>Account</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (watch.ownership) { %>
+                                        <tr>
+                                            <td><%= watch.ownership.ownerId %></td>
+                                            <td><%= watch.ownership.ownerName %></td>
+                                            <td><%= new Date(watch.ownership.transferDate).toLocaleDateString() %></td>
+                                            <td><%= watch.ownership.contact %></td>
+                                            <td><%= watch.ownership.email %></td>
+                                            <td><%= acct %></td>
+                                        </tr>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="6">No ownership records available</td>
+                                            </tr>
+                                            <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Service History -->
+                    <div class="details-card mb-4">
+                        <div class="details-card-header d-flex justify-content-between align-items-center">
+                            <h3 class="m-0">Service History</h3>
+                            <a href="/addService/<%= watch.id %>" class="btn btn-custom">Add Service Record</a>
+                        </div>
+                        <div class="p-3">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service Date</th>
+                                        <th>Service Details</th>
+                                        <th>Replacement </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (watch.serviceHistory) { %>
+                                        <tr>
+                                            <td><%= new Date(watch.serviceHistory.serviceDate).toLocaleDateString() %>
+                                            </td>
+                                            <td><%= watch.serviceHistory.serviceDetails %></td>
+                                            <td><%= watch.serviceHistory.replacementParts %></td>
+                                        </tr>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="4">No service history available</td>
+                                            </tr>
+                                            <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <% } else { %>
                 <div class="alert alert-warning">No Watch found.</div>
-            <% } %>
+                <% } %>
     </div>
 </body>
+
 </html>

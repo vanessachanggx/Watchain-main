@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Watchain- Register Watch</title>
     <meta charset="UTF-8">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.1/web3.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,6 +31,7 @@
             align-items: center;
             width: 100%;
         }
+
         .account-info {
             color: white;
             background-color: rgba(255, 255, 255, 0.1);
@@ -43,7 +46,7 @@
             text-align: center;
             padding: 3rem 1rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .welcome-banner h1 {
@@ -60,7 +63,7 @@
             padding: 2rem;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         form {
@@ -113,10 +116,41 @@
             max-width: 200px;
             height: auto;
         }
+
+        .connect-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .connect-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
     </style>
 </head>
+
 <body>
-    
+
     <nav class="navbar navbar-expand-sm">
         <div class="container-fluid">
             <a class="navbar-brand text-white" href="/">
@@ -132,7 +166,8 @@
                     </li>
                 </ul>
             </div>
-            <span class="account-info">Account: <%= acct %></span>
+            <button id="connectButton" class="connect-button">Connect to MetaMask</button>
+            <span class="account-info" id="accountDisplay">Account: <%= acct %></span>
         </div>
     </nav>
 
@@ -180,4 +215,5 @@
         </form>
     </div>
 </body>
+
 </html>

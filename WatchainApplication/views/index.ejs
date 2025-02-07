@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <title>Watchain</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.1/web3.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,7 +22,7 @@
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             font-family: 'Public Sans';
-             background-color:#e6e2df;
+            background-color: #e6e2df;
         }
 
         .navbar {
@@ -51,16 +54,16 @@
             text-align: center;
             padding: 3rem 1rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .welcome-banner h1 {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             font-weight: 600;
             letter-spacing: 1px;
         }
-        
+
         .welcome-banner p {
             font-size: 1.2rem;
             opacity: 0.9;
@@ -68,8 +71,8 @@
             margin: 0 auto;
             line-height: 1.6;
             font-weight: 400;
-        }        
-        
+        }
+
         .watch-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -78,16 +81,17 @@
             max-width: 1200px;
             margin: 0 auto;
         }
+
         .watch-card-link {
             text-decoration: none;
             color: inherit;
             display: block;
         }
-        
+
         .watch-card-link:hover {
             text-decoration: none;
         }
-        
+
         .watch-card {
             background: white;
             border-radius: 8px;
@@ -102,7 +106,7 @@
 
         .watch-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .watch-image-container {
@@ -141,7 +145,7 @@
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             max-width: 80%;
             max-height: 80vh;
@@ -155,7 +159,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
 
@@ -166,8 +170,39 @@
             cursor: pointer;
             font-size: 24px;
         }
+
+        .connect-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .connect-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
     </style>
 </head>
+
 <body>
 
     <nav class="navbar navbar-expand-sm">
@@ -185,34 +220,118 @@
                     </li>
                 </ul>
             </div>
-            <span class="account-info">Account: <%= acct %></span>
+            <button id="connectButton" class="connect-button">Connect to MetaMask</button>
+            <span class="account-info" id="accountDisplay">Account: <%= acct %></span>
         </div>
     </nav>
-    
+
     <div class="welcome-banner">
         <h1>Welcome to WATCHAIN</h1>
         <p>Your Trusted Platform for Rolex Authentication & Verification</p>
-    </div>    
+    </div>
+
     <div class="watch-grid">
-        <% if (watches && watches.length > 0) { %>
+        <% if (watches && watches.length> 0) { %>
             <% for(let i=0; i < watches.length; i++) { %>
                 <a href="/watch/<%= watches[i].id %>" class="watch-card-link">
                     <div class="watch-card">
                         <div class="watch-image-container">
-                            <img src="/images/<%= watches[i].watchInfo.model %>.jpg" 
-                                 alt="<%= watches[i].watchInfo.model %>" 
-                                 class="watch-image"
-                                 onerror="console.error('Image failed to load:', this.src);"/>
+                            <img src="/images/<%= watches[i].watchInfo.model %>.jpg" alt="<%= watches[i].watchInfo.model %>"
+                                class="watch-image" onerror="console.error('Image failed to load:', this.src);" />
                         </div>
                         <div class="watch-info">
                             <div class="watch-model"><%= watches[i].watchInfo.model %></div>
                         </div>
                     </div>
                 </a>
-            <% } %>
-        <% } else { %>
-            <div class="no-watches">
-                <p>No watches available</p>
-            </div>
-        <% } %>
+                <% } %>
+                    <% } else { %>
+                        <div class="no-watches">
+                            <p>No watches available</p>
+                        </div>
+                        <% } %>
+    </div>
+    <div id="status"></div>
+
+    <script>
+        const connectButton = document.getElementById('connectButton');
+        const accountDisplay = document.getElementById('accountDisplay');
+        const statusDiv = document.getElementById('status');
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+                    const account = accounts[0];
+                    accountDisplay.textContent = `Account: ${account}`;
+                    connectButton.disabled = true;
+                    connectButton.textContent = 'Connected';
+                    statusDiv.className = 'success';
+                    statusDiv.textContent = `Connected to MetaMask with account: ${account}`;
+                    // You can store the account in a variable or update it in your backend
+
+                    // Listen for account changes
+                    window.ethereum.on('accountsChanged', handleAccountsChanged);
+                    // Listen for chain changes
+                    window.ethereum.on('chainChanged', handleChainChanged);
+
+                } catch (error) {
+                    statusDiv.className = 'error';
+                    statusDiv.textContent = `Error: ${error.message}`;
+                    console.error("Error connecting to MetaMask:", error);
+                }
+            } else {
+                statusDiv.className = 'error';
+                statusDiv.innerHTML = 'MetaMask is not installed. Please install MetaMask to continue.';
+            }
+        }
+
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                accountDisplay.textContent = 'Account: Not connected';
+                connectButton.disabled = false;
+                connectButton.textContent = 'Connect to MetaMask';
+            } else {
+                const account = accounts[0];
+                accountDisplay.textContent = `Account: ${account}`;
+            }
+            window.location.reload();
+        }
+
+        function handleChainChanged(_chainId) {
+            // Reload the page when the chain changes
+            window.location.reload();
+        }
+
+        connectButton.addEventListener('click', connectWallet);
+
+        // Check if already connected on load
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_accounts'
+                    }); // Use eth_accounts to check if already connected
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        accountDisplay.textContent = `Account: ${account}`;
+                        connectButton.disabled = true;
+                        connectButton.textContent = 'Connected';
+                        statusDiv.className = 'success';
+                        statusDiv.textContent = `Connected to MetaMask with account: ${account}`;
+                    } else {
+                        accountDisplay.textContent = 'Account: Not connected';
+                    }
+                } catch (error) {
+                    console.error("Error checking connection:", error);
+                }
+            } else {
+                accountDisplay.textContent = 'Account: MetaMask not installed';
+            }
+        });
+    </script>
+</body>
+
 </html>

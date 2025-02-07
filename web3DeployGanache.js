@@ -10,7 +10,7 @@ async function main() {
 
         const web3 = new Web3(
           new Web3.providers.HttpProvider(
-            `https://${network}.infura.io/v3/${process.env.API_KEY}`,
+            "HTTP://127.0.0.1:7545",
           ),
         );
           
@@ -18,7 +18,7 @@ async function main() {
         const contractJson = JSON.parse(fs.readFileSync('WatchainApplication/build/Watchain.json'));
         
         // Get the private key from environment
-        const privateKey = process.env.SEPOLIA_PRIVATE_KEY;
+        const privateKey = process.env.GANACHE_PRIVATE_KEY;
         if (!privateKey) {
             throw new Error('Private key not found in environment variables');
         }
