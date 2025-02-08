@@ -127,12 +127,20 @@ function formatOwnershipInfo(ownershipInfo) {
 }
 
 function formatServiceHistoryInfo(serviceHistoryInfo) {
-  return {
-    serviceDate: serviceHistoryInfo[0],
-    serviceDetails: serviceHistoryInfo[1],
-    replacementParts: serviceHistoryInfo[2],
-  };
-}
+    if (Array.isArray(serviceHistoryInfo)) {
+      return serviceHistoryInfo.map(history => {
+        return {
+          serviceDate: history[0],
+          serviceDetails: history[1],
+          replacementParts: history[2]
+        };
+      });
+    } else {
+      // If serviceHistoryInfo is not an array, return an empty array
+      return [];
+    }
+  }
+
 
 // In your Express app, add this new endpoint:
 app.get('/loading-status', (req, res) => {
@@ -294,7 +302,7 @@ app.post('/', upload.single('watchImage'), async (req, res) => {
     }
 });
 
-app.post('/setFunc', async (req, res) => {
+  app.post('/setFunc', async (req, res) => {
     addEnabled = null;
     res.json({
       success: true,

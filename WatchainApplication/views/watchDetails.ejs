@@ -278,9 +278,8 @@
                             </table>
                         </div>
                     </div>
-
-                    <!-- Service History -->
-                    <div class="details-card mb-4">
+                     <!-- Service History -->
+                     <div class="details-card mb-4">
                         <div class="details-card-header d-flex justify-content-between align-items-center">
                             <h3 class="m-0">Service History</h3>
                             <a href="/addService/<%= watch.id %>" class="btn btn-custom">Add Service Record</a>
@@ -291,26 +290,30 @@
                                     <tr>
                                         <th>Service Date</th>
                                         <th>Service Details</th>
-                                        <th>Replacement </th>
+                                        <th>Replacement Parts</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% if (watch.serviceHistory) { %>
+                                    <% if (watch.serviceHistory && watch.serviceHistory.length > 0) { %>
+                                      <% watch.serviceHistory.forEach(function(service) { %>
                                         <tr>
-                                            <td><%= new Date(watch.serviceHistory.serviceDate).toLocaleDateString() %>
-                                            </td>
-                                            <td><%= watch.serviceHistory.serviceDetails %></td>
-                                            <td><%= watch.serviceHistory.replacementParts %></td>
+                                          <td><%= new Date(service.serviceDate).toLocaleDateString() %></td>
+                                          <td><%= service.serviceDetails %></td>
+                                          <td><%= service.replacementParts %></td>
                                         </tr>
-                                        <% } else { %>
-                                            <tr>
-                                                <td colspan="4">No service history available</td>
-                                            </tr>
-                                            <% } %>
+                                      <% }); %>
+                                    <% } else if (watch.serviceHistory){ %>
+                                      <td>No service history available</td>
+                                    <% } else { %>
+                                      <tr>
+                                        <td colspan="4">No service history available</td>
+                                      </tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+             
                 </div>
             </div>
             <% } else { %>
