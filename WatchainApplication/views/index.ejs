@@ -262,7 +262,7 @@
             if (typeof window.ethereum !== 'undefined') {
                 try {
                     const accounts = await window.ethereum.request({
-                        method: 'eth_requestAccounts'
+                        method: 'eth_requestAccounts',
                     });
                     const account = accounts[0];
                     accountDisplay.textContent = `Account: ${account}`;
@@ -270,13 +270,6 @@
                     connectButton.textContent = 'Connected';
                     statusDiv.className = 'success';
                     statusDiv.textContent = `Connected to MetaMask with account: ${account}`;
-                    // You can store the account in a variable or update it in your backend
-
-                    // Listen for account changes
-                    window.ethereum.on('accountsChanged', handleAccountsChanged);
-                    // Listen for chain changes
-                    window.ethereum.on('chainChanged', handleChainChanged);
-
                 } catch (error) {
                     statusDiv.className = 'error';
                     statusDiv.textContent = `Error: ${error.message}`;
@@ -301,34 +294,74 @@
         }
 
         function handleChainChanged(_chainId) {
-            // Reload the page when the chain changes
             window.location.reload();
         }
 
-        connectButton.addEventListener('click', connectWallet);
-
-        // Check if already connected on load
-        window.addEventListener('load', async () => {
-            if (typeof window.ethereum !== 'undefined') {
+        connectButton.addEventListener('click', async () => {
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', handleChainChanged);
                 try {
-                    const accounts = await window.ethereum.request({
-                        method: 'eth_accounts'
-                    }); // Use eth_accounts to check if already connected
+                    // Request account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                    // Get the current account
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    const account = accounts[0];
+
+                    // Update UI with the connected account
+                    accountDisplay.textContent = `Account: ${account}`;
+                    connectButton.disabled = true;
+                    connectButton.textContent = 'Connected';
+                    statusDiv.className = 'success';
+                    statusDiv.textContent = 'Connected to MetaMask!';
+
+                    //Reload
+                    window.location.reload();
+
+                } catch (error) {
+                    console.error("Could not connect to MetaMask", error);
+                    statusDiv.className = 'error';
+                    statusDiv.textContent = `Connection error: ${error.message}`;
+                }
+            } else {
+                console.error("MetaMask is not installed");
+                statusDiv.className = 'error';
+                statusDiv.textContent = 'MetaMask is not installed. Please install it!';
+            }
+        });
+
+        //Check if already connected on load
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                try {
+                    // Check if there is a connected account
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+
                     if (accounts.length > 0) {
                         const account = accounts[0];
+                        // Update UI with the connected account
                         accountDisplay.textContent = `Account: ${account}`;
                         connectButton.disabled = true;
                         connectButton.textContent = 'Connected';
                         statusDiv.className = 'success';
-                        statusDiv.textContent = `Connected to MetaMask with account: ${account}`;
+                        statusDiv.textContent = 'Connected to MetaMask!';
                     } else {
                         accountDisplay.textContent = 'Account: Not connected';
+                        connectButton.disabled = false;
+                        connectButton.textContent = 'Connect to MetaMask';
                     }
                 } catch (error) {
                     console.error("Error checking connection:", error);
+                    accountDisplay.textContent = 'Account: Not connected';
+                    connectButton.disabled = false;
+                    connectButton.textContent = 'Connect to MetaMask';
                 }
             } else {
+                console.error("MetaMask is not installed");
                 accountDisplay.textContent = 'Account: MetaMask not installed';
+                connectButton.disabled = false;
+                connectButton.textContent = 'Connect to MetaMask';
             }
         });
     </script>

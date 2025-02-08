@@ -241,7 +241,6 @@
 
                 <!-- Right column - Records -->
                 <div class="col-md-8">
-                    <!-- Ownership Records Section -->
                     <div class="details-card mb-4">
                         <div class="details-card-header d-flex justify-content-between align-items-center">
                             <h3 class="m-0">Ownership Records</h3>
@@ -251,7 +250,6 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Owner ID</th>
                                         <th>Owner Name</th>
                                         <th>Transfer Date</th>
                                         <th>Contact</th>
@@ -260,24 +258,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% if (watch.ownership) { %>
-                                        <tr>
-                                            <td><%= watch.ownership.ownerId %></td>
-                                            <td><%= watch.ownership.ownerName %></td>
-                                            <td><%= new Date(watch.ownership.transferDate).toLocaleDateString() %></td>
-                                            <td><%= watch.ownership.contact %></td>
-                                            <td><%= watch.ownership.email %></td>
-                                            <td><%= acct %></td>
-                                        </tr>
-                                        <% } else { %>
+                                    <% if (watch.ownership && watch.ownership.length > 0) { %>
+                                        <% watch.ownership.forEach(function(owner) { %>
                                             <tr>
-                                                <td colspan="6">No ownership records available</td>
+                                                <td><%= owner.ownerName %></td>
+                                                <td><%= new Date(owner.transferDate).toLocaleDateString() %></td>
+                                                <td><%= owner.contactNumber %></td>
+                                                <td><%= owner.email %></td>
+                                                <td><%= acct %></td>
                                             </tr>
-                                            <% } %>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5">No ownership records available</td>
+                                        </tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </div>                    
+                
                      <!-- Service History -->
                      <div class="details-card mb-4">
                         <div class="details-card-header d-flex justify-content-between align-items-center">

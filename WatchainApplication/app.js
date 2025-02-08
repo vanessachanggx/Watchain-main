@@ -2,7 +2,7 @@
 const express = require('express');
 const { Web3 } = require('web3');
 const fs = require("fs");
-const Watchain = require('./public/build/Watchain.json');
+const Watchain = require('../build/Watchain.json');
 const multer = require('multer');
 
 const storage = multer.diskStorage({
@@ -75,14 +75,14 @@ async function loadBlockchainData() {
             watchInfo, ownershipInfo, serviceHistoryInfo
           ] = await Promise.all([
             contractInfo.methods.getWatchInfo(i).call(),
-            contractInfo.methods.getCurrentOwner(i).call(),
+            contractInfo.methods.getOwnershipRecords(i).call(),
             contractInfo.methods.getServiceHistory(i).call()
           ]);
 
           const watchData = {
             id: i,
             watchInfo: formatWatchInfo(watchInfo),
-            ownership: formatOwnershipInfo(ownershipInfo),
+            ownership: formatOwnershipRecords(ownershipInfo),
             serviceHistory: formatServiceHistoryInfo(serviceHistoryInfo)
           };
           watches.push(watchData);
@@ -115,15 +115,26 @@ function formatWatchInfo(watchInfo) {
     };
 }
 
-function formatOwnershipInfo(ownershipInfo) {
-  return {
-    ownerId: ownershipInfo[0],
-    ownerName: ownershipInfo[1],
-    contact: ownershipInfo[2], // Changed from ownerContact
-    email: ownershipInfo[3],  // Changed from ownerEmail
-    transferDate: ownershipInfo[4] // Remove date formatting here
-
-  };
+function formatOwnershipRecords(ownershipRecords) {
+    if (Array.isArray(ownershipRecords)) {
+        return ownershipRecords.map(record => {
+            // Safely extract data, providing defaults for missing fields
+            const ownerId = record[0];
+            const ownerName = record[1];
+            let transferDate = record[2];
+            const contactNumber = record[3];
+            const email = record[4];
+            return {
+                ownerId: ownerId,
+                ownerName: ownerName,
+                transferDate: transferDate,
+                contactNumber: contactNumber,
+                email: email
+            };
+        });
+    } else {
+        return [];
+    }
 }
 
 function formatServiceHistoryInfo(serviceHistoryInfo) {
@@ -226,18 +237,19 @@ app.post('/web3ConnectData', express.json({ limit: '1mb' }), async (req, res) =>
 app.get('/watch/:id', async (req, res) => {
     try {
         const watchId = req.params.id;
+        console.log(watchId);
 
         // Get watch details from smart contract
         const [watchInfo, ownershipInfo, serviceHistoryInfo] = await Promise.all([
             contractInfo.methods.getWatchInfo(watchId).call(),
-            contractInfo.methods.getCurrentOwner(watchId).call(),
+            contractInfo.methods.getOwnershipRecords(watchId).call(),
             contractInfo.methods.getServiceHistory(watchId).call()
         ]);
 
         const watchDetails = {
             id: watchId,
             watchInfo: formatWatchInfo(watchInfo),
-            ownership: formatOwnershipInfo(ownershipInfo),
+            ownership: formatOwnershipRecords(ownershipInfo),
             serviceHistory: formatServiceHistoryInfo(serviceHistoryInfo)
         };
 
@@ -260,13 +272,11 @@ app.post('/', upload.single('watchImage'), async (req, res) => {
     console.log('Request body:', req.body);
     const {
         serialNumber, model, collection, dateOfManufacture,
-        authorizedDealer, initialOwnerId, initialOwnerName,
-        initialOwnerContact, initialOwnerEmail, purchaseDate
+        authorizedDealer, price
     } = req.body;
 
     // Ensure all fields are present
-    if (!serialNumber || !model || !collection || !dateOfManufacture || !authorizedDealer ||
-        !initialOwnerId || !initialOwnerName || !initialOwnerContact || !initialOwnerEmail || !purchaseDate) {
+    if (!serialNumber || !model || !collection || !dateOfManufacture || !authorizedDealer || !price) {
         return res.status(400).send('All fields are required.');
     }
 
@@ -275,32 +285,30 @@ app.post('/', upload.single('watchImage'), async (req, res) => {
         const watchImagePath = req.file ? req.file.filename : null;
 
         const stringSerialNumber = serialNumber.toString();
-        const stringOwnerId = initialOwnerId.toString();
-        const formattedPurchaseDate = new Date(purchaseDate).toISOString();
+        const numPrice = parseInt(price); //Parse string to number
 
         // Estimate gas required for the transaction
         const estimatedGas = await contractInfo.methods.registerWatch(
             stringSerialNumber, model, collection, dateOfManufacture,
-            authorizedDealer, stringOwnerId, initialOwnerName,
-            initialOwnerContact, initialOwnerEmail, formattedPurchaseDate, watchImagePath
+            authorizedDealer, watchImagePath, numPrice
         ).estimateGas({ from: account });
 
         // Send the transaction
         await contractInfo.methods.registerWatch(
             stringSerialNumber, model, collection, dateOfManufacture,
-            authorizedDealer, stringOwnerId, initialOwnerName,
-            initialOwnerContact, initialOwnerEmail, formattedPurchaseDate, watchImagePath
+            authorizedDealer, watchImagePath, numPrice
         ).send({
             from: account,
             gas: BigInt(estimatedGas) + BigInt(50000)
         });
 
-        res.send('Watch registered successfully!');
+        res.render('index');
     } catch (error) {
         console.error('Error registering watch:', error);
         res.status(500).send('Error registering watch');
     }
 });
+
 
   app.post('/setFunc', async (req, res) => {
     addEnabled = null;
@@ -326,52 +334,45 @@ app.get('/addOwner/:watchId', async (req, res) => {
 });
 
 app.post('/addOwner/:watchId', async (req, res) => {
-  try {
-      const watchId = req.params.watchId;
-      const {
-          OwnerId,
-          ownerName,
-          contact,
-          email,
-          transferDate
-      } = req.body;
+    try {
+        const watchId = req.params.watchId;
+        const {
+            ownerName,
+            transferDate,
+            contact,
+            email
+        } = req.body;
 
-      // Convert the transfer date to ISO string
-      const formattedTransferDate = new Date(transferDate).toISOString();
+        // Convert the transfer date to ISO string
+        const formattedTransferDate = new Date(transferDate).toISOString();
 
-      // Estimate gas for the transaction
-      const estimatedGas = await contractInfo.methods.addOwnershipRecord(
-          watchId,
-          OwnerId,
-          ownerName,
-          contact,
-          email,
-          formattedTransferDate,
-          account // Add the sender's address as the 5th parameter
-      ).estimateGas({ from: account });
+        // Estimate gas for the transaction
+        const estimatedGas = await contractInfo.methods.addOwnershipRecord(
+            watchId,
+            ownerName,
+            formattedTransferDate,
+            contact,
+            email
+        ).estimateGas({ from: account });
 
-      // Execute the transaction
-      await contractInfo.methods.addOwnershipRecord(
-          watchId,
-          OwnerId,
-          ownerName,
-          contact,
-          email,
-          formattedTransferDate,
-          account // Add the sender's address as the 5th parameter
-      ).send({
-          from: account,
-          gas: BigInt(estimatedGas) + BigInt(50000)
-      });
+        // Execute the transaction
+        await contractInfo.methods.addOwnershipRecord(
+            watchId,
+            ownerName,
+            formattedTransferDate,
+            contact,
+            email
+        ).send({
+            from: account,
+            gas: BigInt(estimatedGas) + BigInt(50000)
+        });
 
-      res.redirect(`/watch/${watchId}`);
-  } catch (error) {
-      console.error('Error adding owner:', error);
-      res.status(500).send('Error adding owner');
-  }
+        res.redirect(`/watch/${watchId}`);
+    } catch (error) {
+        console.error('Error adding owner:', error);
+        res.status(500).send('Error adding owner');
+    }
 });
-
-// Add these routes after your existing routes in app.js
 
 // GET route to display the add service form
 app.get('/addService/:watchId', async (req, res) => {

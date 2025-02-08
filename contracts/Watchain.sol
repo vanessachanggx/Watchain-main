@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 contract Watchain {
     enum WatchStatus {Available, Sold}
-    
+
     string public companyName;
     uint watchCount;
 
@@ -18,6 +18,7 @@ contract Watchain {
         string collection;
         string dateOfManufacture;
         string authorizedDealer;
+        string watchImage; // added watch image
         uint price;
         WatchStatus status;
     }
@@ -45,9 +46,9 @@ contract Watchain {
     mapping(uint256 => Watch) public watches;
 
     event WatchRegistered(
-        uint256 watchId, 
-        string serialNumber, 
-        string model, 
+        uint256 watchId,
+        string serialNumber,
+        string model,
         string collection
     );
 
@@ -59,8 +60,8 @@ contract Watchain {
     );
 
     event ServiceRecordAdded(
-        uint256 watchId, 
-        string serviceDate, 
+        uint256 watchId,
+        string serviceDate,
         string details,
         string replacementParts
     );
@@ -81,22 +82,28 @@ contract Watchain {
         return watchCount;
     }
 
-    function registerWatch() public returns (uint256) {
-        watchCount++;
-        return watchCount;
-    }
-
-    function addWatchInfo(
-        uint256 watchId,
+    function registerWatch(
         string memory _serialNumber,
         string memory _model,
         string memory _collection,
         string memory _dateOfManufacture,
         string memory _authorizedDealer,
+        string memory _watchImage,
         uint _price
-    ) public {
-        watches[watchId].watchInfo = WatchInformation(_serialNumber, _model, _collection, _dateOfManufacture, _authorizedDealer, _price, WatchStatus.Available);
-        emit WatchRegistered(watchId, _serialNumber, _model, _collection);
+    ) public returns (uint256) {
+        watchCount++;
+        watches[watchCount].watchInfo = WatchInformation(
+            _serialNumber,
+            _model,
+            _collection,
+            _dateOfManufacture,
+            _authorizedDealer,
+            _watchImage,
+            _price,
+            WatchStatus.Available
+        );
+        emit WatchRegistered(watchCount, _serialNumber, _model, _collection);
+        return watchCount;
     }
 
     function addOwnershipRecord(
